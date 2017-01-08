@@ -1788,10 +1788,8 @@ def GetHeaderGuardCPPVariable(filename):
 
 def CheckForHeaderGuard(filename, clean_lines, error):
   """Checks that the file contains a header guard.
-
-  Logs an error if no #ifndef header guard is present.  For other
-  headers, checks that the full pathname is used.
-
+  Logs an error if no #ifndef header guard or #pragma once guard is present.
+  For other headers, checks that the full pathname is used.
   Args:
     filename: The name of the C++ header file.
     clean_lines: A CleansedLines instance containing the file.
@@ -1819,6 +1817,9 @@ def CheckForHeaderGuard(filename, clean_lines, error):
   for linenum, line in enumerate(raw_lines):
     linesplit = line.split()
     if len(linesplit) >= 2:
+      # don't need to verify ifdef if pragma is present
+      if linesplit[0] == '#pragma' and linesplit[1] == 'once':
+        return
       # find the first occurrence of #ifndef and #define, save arg
       if not ifndef and linesplit[0] == '#ifndef':
         # set ifndef to the header guard presented on the #ifndef line.
